@@ -12,8 +12,9 @@ function App() {
   const [time, setTime] = useState(new Date());
   const [inputTime, setInputTime] = useState("");
   const [error, setError] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
 
-  // To update the time every second
+  // To update the time every second if the user isn't editing
   useEffect(() => {
     const timer = setInterval(() => {
       setTime((prevTime) => {
@@ -27,6 +28,11 @@ function App() {
     return () => clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    if (!isEditing) {
+      setInputTime(formatTime(time));
+    }
+  }, [time, isEditing]);
   /**
    * Format time as HH:MM:SS
    * @param {Date} date - Date object to format
@@ -38,6 +44,46 @@ function App() {
     const seconds = String(date.getSeconds()).padStart(2, "0");
     return `${hours}:${minutes}:${seconds}`;
   };
+
+  /**
+   * Handle user input change for the first watch
+   * @param {Event} event - Input change event
+   */
+  const handleInputChange = (event) => {
+    let value = event.target.value;
+  
+    // Allow only numbers
+    value = value.replace(/\D/g, '');
+  
+    // Add colons at the right places
+    if (value.length >= 3) {
+      value = value.slice(0, 2) + ':' + value.slice(2);
+    }
+    if (value.length >= 6) {
+      value = value.slice(0, 5) + ':' + value.slice(5, 8);
+    }
+  
+    // Update the input state and check the validity
+    setInputTime(value);
+    setIsEditing(true); // User is editing the time
+  
+    const timePattern = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;
+    const match = value.match(timePattern);
+  
+    if (match) {
+      const [hours, minutes, seconds] = match;
+      const newTime = new Date();
+      newTime.setHours(parseInt(hours, 10));
+      newTime.setMinutes(parseInt(minutes, 10));
+      newTime.setSeconds(parseInt(seconds, 10));
+  
+      setTime(newTime);
+      setError('');
+    } else {
+      setError('Invalid time format. Use HH:MM:SS.');
+    }
+  };
+  
 
   /**
    * Get the time for the second watch
@@ -59,104 +105,30 @@ function App() {
     return secondWatchTime;
   };
 
-  /**
-   * Handle input change
-   * @param {Event} e - Input change event
-   */
-  const handleInputChange = (e) => {
-    setInputTime(e.target.value);
-  };
-
-  /**
-   * Handle form submission
-   * @param {Event} e - Form submit event
-   */
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    try {
-      // Validate input format using regex
-      const timeRegex = /^([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/;
-      if (!timeRegex.test(inputTime)) {
-        throw new Error(
-          "Invalid time format. Please use HH:MM:SS (e.g., 15:30:45)",
-        );
-      }
-
-      // Parse input time
-      const [hours, minutes, seconds] = inputTime.split(":").map(Number);
-
-      // Create new date with input time
-      const newTime = new Date();
-      newTime.setHours(hours);
-      newTime.setMinutes(minutes);
-      newTime.setSeconds(seconds);
-
-      // Update time state
-      setTime(newTime);
-      setError("");
-    } catch (error) {
-      setError(error.message);
-    }
-  };
-
   return (
     <div className="app">
       <div className="watches-container">
         <div className="watch-container">
           <h2>Current Time</h2>
           <Watch time={time} />
-          <p>Time: {formatTime(time)}</p>
+          <input
+            type="text"
+            value={inputTime}
+            onChange={handleInputChange}
+            onBlur={() => setIsEditing(false)} // Stop editing when input loses focus
+          />
+          {error && <p className="error">{error}</p>}
         </div>
 
         <div className="watch-container">
           <h2>(+1h +15m +30s)</h2>
           <Watch time={getSecondWatchTime(1, 15, 30)} />
-          <p>Time: {formatTime(getSecondWatchTime(1, 15, 30))}</p>
-        </div>
-      </div>
-
-      <div className="time-input">
-        <form onSubmit={handleSubmit}>
-          <label htmlFor="timeInput">Set Time (HH:MM:SS): </label>
           <input
-            id="timeInput"
             type="text"
-            value={inputTime}
-            onChange={(e) => {
-              const value = e.target.value.replace(/\D/g, ""); // Only allow numbers
-              let formattedValue = "";
-
-              if (value.length > 0) {
-                formattedValue = value.slice(0, 2);
-                if (value.length > 2) {
-                  formattedValue += ":" + value.slice(2, 4);
-                  if (value.length > 4) {
-                    formattedValue += ":" + value.slice(4, 6);
-                  }
-                }
-              }
-
-              // Limit to 6 digits total
-              if (value.length <= 6) {
-                handleInputChange({ target: { value: formattedValue } });
-              }
-            }}
-            placeholder="e.g., 14:30:00"
-            pattern="([0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]"
-            title="Time format: HH:MM:SS (e.g., 15:30:45)"
-            maxLength={8}
+            value={formatTime(getSecondWatchTime(1, 15, 30))}
+            readOnly
           />
-          <button
-            type="submit"
-            disabled={
-              !/^([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])$/.test(inputTime)
-            }
-          >
-            Set Time
-          </button>
-        </form>
-        {error && <p className="error">{error}</p>}
+        </div>
       </div>
     </div>
   );
