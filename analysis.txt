@@ -1,0 +1,98 @@
+# Analysis of Wall Watches Implementation
+
+## Algorithm/Path Chosen
+
+For the implementation of the wall watches application, I chose a straightforward approach using React's component structure.
+The implementation can be broken down into several key parts:
+
+### 1. Time Management
+
+I used the JavaScript `Date` object to manage time, which provides built-in methods for manipulating time values.
+The app maintains the current time in state and updates it every second using `setInterval` in a `useEffect` hook.
+
+- The watches update in real-time
+- Time calculations remain accurate
+- Easier time manipulation (adding hours, minutes, seconds)
+
+### 2. Watch Rendering
+
+For rendering the watches, I used a free SVG and modify a little to put them in a component with the following characteristics:
+
+- Circular clock face with hour, minute and second markers 
+- Mathematical calculations to position the hands based on the current time
+- The calculation converts time to angles (degrees) and then to coordinates on the SVG canvas
+
+Formula:
+Using polar coordinates, a circle is 360°, so the clock is divided in 12 part, so each hour is separate by 30° degrees,
+an hour has 60 minutes, so each minutes is separete by 6° degrees, and since an minute has 60 seconds is separate by 6° degrees,
+so the formula end in this:
+- Hour hand: `(hours % 12 * 30 + minutes * 0.5) - 90` degrees (30° per hour plus a fraction for minutes)
+- Minute hand: `(minutes * 6 + seconds * 0.1) - 90` degrees (6° per minute plus a small fraction for seconds)
+- Second hand: `(seconds * 6) - 90` degrees (6° per second)
+
+The `-90` adjustment is needed because in SVG, 0° points to the right (3 o'clock), but we want 0° to point to the top (12 o'clock).
+
+### 3. User Input Handling
+
+For handling user input:
+- Used a controlled form input for capturing the time
+- Implemented validation using both regex pattern matching and try-catch error handling
+- Parsed the input string into hours, minutes, and seconds components
+- Created a new Date object with the parsed values
+- Updated the state to reflect the new time
+
+### 4. Second Watch Offset
+
+For the second watch, use the same watch component but recieve a different time value adding the differents required.
+- Adds 1 hour, 15 minutes, and 30 seconds to it
+- Returns the new Date object
+
+This approach ensures that the second watch always maintains the correct offset from the first watch as both watches continue to update in real-time.
+
+
+## Alternative Algorithms/Approaches
+
+### 1. Canvas Instead of SVG
+
+An alternative approach would be to use the HTML Canvas API instead of SVG:
+
+**Pros:**
+- Potentially better performance for complex animations
+- More low-level control over rendering
+
+**Cons:**
+- More complex code requiring manual drawing operations
+- Less accessible (SVG has better screen reader support)
+- More difficult to style with CSS
+
+### 2. CSS Transforms for Hand Rotation
+
+Instead of calculating coordinates, we could have used CSS transforms to rotate the hands:
+
+**Pros:**
+- Simpler code (no trigonometric calculations)
+- Potentially better performance
+- Easier to add animations/transitions and custom styles
+
+**Cons:**
+- Less precise control over the exact appearance
+- More complex CSS
+- Potential cross-browser inconsistencies
+
+## Conclusion
+
+The chosen implementation strikes a good balance between:
+- Code readability and maintainability
+- Performance
+- Accuracy
+- User experience
+
+The SVG-based approach provides a clean, scalable visual representation of the watches while the React state handles the time updates efficiently.
+The error handling around the user input ensures robustness, and the component structure allows for easy reuse and extension.
+
+For a production application, I would consider adding:
+- Unit tests for the time calculations and rendering
+- More extensive input validation and error handling
+- Accessibility improvements
+- Themes and customization options
+- Potentially refactoring to TypeScript for better type safety
