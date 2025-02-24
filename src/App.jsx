@@ -13,6 +13,7 @@ function App() {
   const [inputTime, setInputTime] = useState("");
   const [error, setError] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  const timePattern = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;
 
   // To update the time every second if the user isn't editing
   useEffect(() => {
@@ -67,7 +68,6 @@ function App() {
     setInputTime(value);
     setIsEditing(true); // User is editing the time
   
-    const timePattern = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;
     const match = value.match(timePattern);
   
     if (match) {
@@ -115,7 +115,9 @@ function App() {
             type="text"
             value={inputTime}
             onChange={handleInputChange}
-            onBlur={() => setIsEditing(false)} // Stop editing when input loses focus
+            onBlur={() => setIsEditing(false)}
+            pattern={timePattern}
+            maxLength={8}
           />
           {error && <p className="error">{error}</p>}
         </div>
