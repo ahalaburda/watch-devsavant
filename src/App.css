@@ -27,7 +27,6 @@
 
 .watch-container p {
   margin-top: 10px;
-  font-size: 1.2em;
   font-weight: bold;
 }
 
@@ -68,6 +67,7 @@
 }
 
 .error {
+  font-size: 10px;
   color: #d32f2f;
 }
 
