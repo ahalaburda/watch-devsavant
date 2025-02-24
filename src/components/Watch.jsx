@@ -1,13 +1,13 @@
 import PropTypes from "prop-types";
 
 /**
- * Watch Face Component
+ * Watch Component
  * Renders an SVG watch face with hour, minute, and second hands
  * @param {Object} props - Component props
  * @param {Date} props.time - Time to display on the watch
  */
 
-export default function WatchFace2({ time }) {
+export default function Watch({ time }) {
   const size = 200;
   const center = size / 2;
   const radius = size * 0.4;
@@ -94,6 +94,6 @@ export default function WatchFace2({ time }) {
   );
 }
 
-WatchFace2.propTypes = {
+Watch.propTypes = {
   time: PropTypes.instanceOf(Date),
 };
